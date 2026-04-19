@@ -1,22 +1,2327 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>兮兮时间管理系统</title>
+    <title>儿童时间管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        #systemName {
+            cursor: text;
+            border-bottom: 2px dashed rgba(255,255,255,0.5);
+            padding: 0 5px;
+            min-width: 80px;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        #systemName:hover {
+            background: rgba(255,255,255,0.1);
+            border-bottom-color: white;
+        }
+        
+        #systemName:focus {
+            outline: none;
+            background: rgba(255,255,255,0.2);
+            border-bottom-color: white;
+            border-radius: 5px;
+        }
+        
+        .name-hint {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+        
+        .main-layout {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        /* 左侧：可拖拽方块 */
+        .blocks-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            min-width: 260px;
+            flex: 0 0 auto;
+        }
+        
+        /* 日历样式 */
+        .calendar-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #e9ecef;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .calendar-nav {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .calendar-nav:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .current-week {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .mini-calendar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .calendar-day {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .calendar-day:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .calendar-day.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #5c6bc0;
+        }
+        
+        .calendar-day.holiday {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, #ffe3e3, #fff5f5);
+        }
+        
+        .calendar-day.holiday.active {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: white;
+        }
+        
+        .day-name {
+            font-weight: bold;
+            min-width: 45px;
+        }
+        
+        .day-date {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-left: 8px;
+        }
+        
+        .holiday-badge {
+            font-size: 0.7rem;
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+        
+        .calendar-day.active .holiday-badge {
+            background: white;
+            color: #ff6b6b;
+        }
+        
+        .blocks-panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+        
+        .draggable-blocks {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .block {
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: grab;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            user-select: none;
+        }
+        
+        .block:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        
+        .block:active {
+            cursor: grabbing;
+        }
+        
+        /* 颜色规则 */
+        .block-play {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: white;
+        }
+        
+        .block-study {
+            background: linear-gradient(135deg, #51cf66, #40c057);
+            color: white;
+        }
+        
+        .block-entertainment {
+            background: linear-gradient(135deg, #339af0, #228be6);
+            color: white;
+        }
+        
+        .block-switch {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: white;
+        }
+        
+        .block-emotion {
+            background: linear-gradient(135deg, #ffd43b, #fcc419);
+            color: #333;
+        }
+        
+        .block-sleep {
+            background: linear-gradient(135deg, #9775fa, #7950f2);
+            color: white;
+        }
+        
+        /* 右侧：时间表 */
+        .schedule-panel {
+            flex: 1;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            min-width: 600px;
+        }
+        
+        .schedule-panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+        
+        .days-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .day-column {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            min-width: 180px;
+            flex: 1;
+            max-width: 250px;
+        }
+        
+        .day-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #495057;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+            border-radius: 10px;
+        }
+        
+        .time-slots {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .time-slot {
+            background: white;
+            border: 2px dashed #ced4da;
+            border-radius: 10px;
+            padding: 10px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .time-slot:hover {
+            border-color: #adb5bd;
+            background: #f1f3f5;
+        }
+        
+        .time-slot.drag-over {
+            border-color: #339af0;
+            background: #e7f5ff;
+            border-style: solid;
+        }
+        
+        .time-label {
+            font-size: 0.85rem;
+            color: #868e96;
+            font-weight: 500;
+            font-family: 'Consolas', 'Monaco', monospace;
+            min-width: 95px;
+        }
+        
+        .slot-content {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        
+        .slot-content.play, .slot-content.switch {
+            color: #e03131;
+        }
+        
+        .slot-content.study {
+            color: #2f9e44;
+        }
+        
+        .slot-content.entertainment {
+            color: #1971c2;
+        }
+        
+        .slot-content.emotion {
+            color: #f08c00;
+        }
+        
+        .slot-content.sleep {
+            color: #7048e8;
+        }
+        
+        /* 各类型方块填充整个格子的样式 */
+        .time-slot.filled-play {
+            background: linear-gradient(135deg, #ffe3e3, #ffc9c9) !important;
+            border: 2px solid #ff6b6b !important;
+            border-style: solid !important;
+        }
+        
+        .time-slot.filled-play .time-label {
+            color: #e03131;
+        }
+        
+        .time-slot.filled-study {
+            background: linear-gradient(135deg, #d3f9d8, #b2f2bb) !important;
+            border: 2px solid #51cf66 !important;
+            border-style: solid !important;
+        }
+        
+        .time-slot.filled-study .time-label {
+            color: #2f9e44;
+        }
+        
+        .time-slot.filled-entertainment {
+            background: linear-gradient(135deg, #d0ebff, #a5d8ff) !important;
+            border: 2px solid #339af0 !important;
+            border-style: solid !important;
+        }
+        
+        .time-slot.filled-entertainment .time-label {
+            color: #1971c2;
+        }
+        
+        .time-slot.filled-switch {
+            background: linear-gradient(135deg, #ffe3e3, #ffc9c9) !important;
+            border: 2px solid #ff6b6b !important;
+            border-style: solid !important;
+        }
+        
+        .time-slot.filled-switch .time-label {
+            color: #e03131;
+        }
+        
+        .time-slot.filled-emotion {
+            background: linear-gradient(135deg, #fff9db, #fff3bf) !important;
+            border: 2px solid #ffd43b !important;
+            border-style: solid !important;
+        }
+        
+        .time-slot.filled-emotion .time-label {
+            color: #f59f00;
+        }
+        
+        .time-slot.filled-sleep {
+            background: linear-gradient(135deg, #e5dbff, #d0bfff) !important;
+            border: 2px solid #9775fa !important;
+            border-style: solid !important;
+        }
+        
+        .time-slot.filled-sleep .time-label {
+            color: #7048e8;
+        }
+        
+        .clear-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .time-slot:hover .clear-btn {
+            opacity: 1;
+        }
+        
+        .clear-btn:hover {
+            background: #fa5252;
+        }
+        
+        /* 图例 */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            color: #495057;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+        }
+        
+        .legend-red {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+        }
+        
+        .legend-green {
+            background: linear-gradient(135deg, #51cf66, #40c057);
+        }
+        
+        .legend-blue {
+            background: linear-gradient(135deg, #339af0, #228be6);
+        }
+        
+        .legend-yellow {
+            background: linear-gradient(135deg, #ffd43b, #fcc419);
+        }
+        
+        .legend-purple {
+            background: linear-gradient(135deg, #9775fa, #7950f2);
+        }
+        
+        /* 响应式 */
+        @media (max-width: 900px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            
+            .schedule-panel {
+                min-width: auto;
+            }
+            
+            .days-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .day-column {
+                max-width: 100%;
+                width: 100%;
+            }
+        }
+        
+        /* 拖拽时的样式 */
+        .dragging {
+            opacity: 0.7;
+            transform: scale(1.05);
+        }
+        
+        /* 重置按钮 */
+        .reset-btn {
+            display: block;
+            margin: 25px auto 0;
+            padding: 15px 45px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+            background: linear-gradient(135deg, #fa5252, #e03131);
+        }
+        
+        .reset-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        /* 撤销/恢复按钮 */
+        .undo-redo-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #e9ecef;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .undo-btn, .redo-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #868e96, #495057);
+            color: white;
+        }
+        
+        .undo-btn:hover:not(:disabled), .redo-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .undo-btn:disabled, .redo-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .undo-btn:not(:disabled) {
+            background: linear-gradient(135deg, #339af0, #228be6);
+        }
+        
+        .redo-btn:not(:disabled) {
+            background: linear-gradient(135deg, #51cf66, #40c057);
+        }
+        
+        /* 自定义方块区域 */
+        .custom-blocks-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #e9ecef;
+        }
+        
+        .custom-blocks-section h3 {
+            font-size: 1rem;
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .custom-blocks {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .custom-block-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .custom-block {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: grab;
+            font-weight: bold;
+            font-size: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            user-select: none;
+        }
+        
+        .custom-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        
+        .custom-block:active {
+            cursor: grabbing;
+        }
+        
+        .delete-custom-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            background: #ff6b6b;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .delete-custom-btn:hover {
+            background: #fa5252;
+            transform: scale(1.1);
+        }
+        
+        .add-custom-btn {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #adb5bd;
+            border-radius: 12px;
+            background: #f8f9fa;
+            color: #495057;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .add-custom-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        /* 自定义方块弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .modal-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: #333;
+            box-shadow: 0 0 0 3px white, 0 0 0 5px #333;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .modal-btn-secondary {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .modal-btn-secondary:hover {
+            background: #dee2e6;
+        }
+        
+        /* 统计区域 */
+        .stats-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #e9ecef;
+        }
+        
+        .stats-section h3 {
+            font-size: 1rem;
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .stat-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        
+        .stat-name {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        
+        .stat-bar {
+            flex: 2;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .stat-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .stat-count {
+            font-size: 0.85rem;
+            color: #868e96;
+            min-width: 30px;
+            text-align: right;
+        }
+        
+        .stat-total {
+            text-align: center;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        /* 分享按钮 */
+        .share-btn {
+            display: block;
+            margin: 15px auto 0;
+            padding: 15px 45px;
+            background: linear-gradient(135deg, #51cf66, #40c057);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(81, 207, 102, 0.4);
+        }
+        
+        .share-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(81, 207, 102, 0.5);
+            background: linear-gradient(135deg, #40c057, #37b24d);
+        }
+        
+        .share-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        /* 分享弹窗 */
+        .share-modal-content {
+            max-width: 600px !important;
+        }
+        
+        .share-preview {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 500px;
+            overflow: auto;
+        }
+        
+        .share-preview img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .share-buttons .modal-btn {
+            min-width: 120px;
+        }
+        
+        /* 截图专用样式 */
+        .screenshot-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 20px;
+            color: white;
+        }
+        
+        .screenshot-container h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .screenshot-content {
+            display: flex;
+            gap: 20px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .screenshot-schedule {
+            flex: 2;
+        }
+        
+        .screenshot-stats {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .screenshot-stats h3 {
+            font-size: 1rem;
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .screenshot-day {
+            margin-bottom: 15px;
+        }
+        
+        .screenshot-day-header {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+            border-radius: 8px;
+        }
+        
+        .screenshot-slots {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .screenshot-slot {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .screenshot-slot-time {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #868e96;
+            min-width: 100px;
+            font-size: 0.8rem;
+        }
+        
+        .screenshot-slot-content {
+            flex: 1;
+            font-weight: bold;
+        }
+        
+        .screenshot-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>兮兮时间管理系统</h1>
-    </header>
-    <main>
-        <section>
-            <h2>Welcome to the Time Management System</h2>
-            <p>This system helps you manage your time effectively.</p>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2026 兮兮时间管理系统</p>
-    </footer>
+    <div class="container">
+        <div class="header-section">
+            <h1>🕐 <span id="systemName" contenteditable="true">兮兮</span>时间管理系统</h1>
+            <p class="name-hint">点击名字可以修改哦~</p>
+        </div>
+        
+        <div class="main-layout">
+            <!-- 左侧：日历和可拖拽方块 -->
+            <div class="blocks-panel">
+                <!-- 日历区域 -->
+                <div class="calendar-section">
+                    <div class="calendar-header">
+                        <button class="calendar-nav" onclick="changeWeek(-1)">◀</button>
+                        <span class="current-week" id="currentWeek">本周</span>
+                        <button class="calendar-nav" onclick="changeWeek(1)">▶</button>
+                    </div>
+                    <div class="mini-calendar" id="miniCalendar">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+                
+                <h2>📦 拖拽方块</h2>
+                <div class="draggable-blocks" id="draggableBlocks">
+                    <div class="block block-play" draggable="true" data-type="play">玩</div>
+                    <div class="block block-study" draggable="true" data-type="study">学习</div>
+                    <div class="block block-entertainment" draggable="true" data-type="entertainment">娱乐</div>
+                    <div class="block block-switch" draggable="true" data-type="switch">Switch</div>
+                    <div class="block block-emotion" draggable="true" data-type="emotion">💛 情绪</div>
+                    <div class="block block-sleep" draggable="true" data-type="sleep">😴 睡觉</div>
+                </div>
+                
+                <!-- 自定义方块区域 -->
+                <div class="custom-blocks-section">
+                    <h3>✨ 自定义方块</h3>
+                    <div class="custom-blocks" id="customBlocks"></div>
+                    <button class="add-custom-btn" onclick="showCustomBlockModal()">+ 添加自定义方块</button>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color legend-red"></div>
+                        <span>玩 / Switch</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-green"></div>
+                        <span>学习</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-blue"></div>
+                        <span>娱乐</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-yellow"></div>
+                        <span>情绪</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-purple"></div>
+                        <span>睡觉</span>
+                    </div>
+                </div>
+                
+                <!-- 撤销/恢复按钮 -->
+                <div class="undo-redo-section">
+                    <button class="undo-btn" id="undoBtn" onclick="undo()" disabled>
+                        ↩️ 撤销
+                    </button>
+                    <button class="redo-btn" id="redoBtn" onclick="redo()" disabled>
+                        ↪️ 恢复
+                    </button>
+                </div>
+                
+                <!-- 热力统计 -->
+                <div class="stats-section">
+                    <h3>📊 本周统计</h3>
+                    <div class="stats-grid" id="statsGrid">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧：时间表 -->
+            <div class="schedule-panel">
+                <h2>📅 时间安排</h2>
+                <div class="days-container" id="daysContainer">
+                    <!-- 动态生成 -->
+                </div>
+                <button class="reset-btn" onclick="resetSchedule()">🗑️ 清空所有安排</button>
+                <button class="share-btn" onclick="showShareModal()">📸 一键分享</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享弹窗 -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal-content share-modal-content">
+            <h3>📸 分享本周安排</h3>
+            <div class="share-preview" id="sharePreview">
+                <p>正在生成截图...</p>
+            </div>
+            <div class="share-buttons">
+                <button class="modal-btn modal-btn-secondary" onclick="hideShareModal()">关闭</button>
+                <button class="modal-btn modal-btn-primary" onclick="downloadScreenshot()">💾 保存图片</button>
+                <button class="modal-btn modal-btn-primary" onclick="copyScreenshot()" id="copyBtn">📋 复制到剪贴板</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义方块弹窗 -->
+    <div class="modal-overlay" id="customBlockModal">
+        <div class="modal-content">
+            <h3>✨ 添加自定义方块</h3>
+            <input type="text" class="modal-input" id="customBlockText" placeholder="输入方块名称（如：阅读）" maxlength="10">
+            <div class="color-picker" id="colorPicker">
+                <div class="color-option selected" style="background: linear-gradient(135deg, #ff6b6b, #ee5a5a)" data-color="red"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #51cf66, #40c057)" data-color="green"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #339af0, #228be6)" data-color="blue"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #ffd43b, #fcc419)" data-color="yellow"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #9775fa, #7950f2)" data-color="purple"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #ff8787, #ff6b6b)" data-color="pink"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #ffa94d, #ff922b)" data-color="orange"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #20c997, #12b886)" data-color="teal"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #868e96, #495057)" data-color="gray"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #be4bdb, #ae3ec9)" data-color="magenta"></div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-secondary" onclick="hideCustomBlockModal()">取消</button>
+                <button class="modal-btn modal-btn-primary" onclick="addCustomBlock()">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- html2canvas 库用于截图 -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    
+    <script>
+        // 获取当前用户名称
+        function getUserName() {
+            const nameEl = document.getElementById('systemName');
+            return nameEl ? nameEl.textContent.trim() || '兮兮' : '兮兮';
+        }
+        
+        // 获取用户专属的存储前缀
+        function getUserStoragePrefix() {
+            return `xixi_${getUserName()}_`;
+        }
+        
+        // 2025-2026年中国法定节假日
+        const holidays2025 = {
+            '2025-01-01': '元旦',
+            '2025-01-28': '春节',
+            '2025-01-29': '春节',
+            '2025-01-30': '春节',
+            '2025-01-31': '春节',
+            '2025-02-01': '春节',
+            '2025-02-02': '春节',
+            '2025-02-03': '春节',
+            '2025-02-04': '春节',
+            '2025-04-04': '清明',
+            '2025-04-05': '清明',
+            '2025-04-06': '清明',
+            '2025-05-01': '劳动节',
+            '2025-05-02': '劳动节',
+            '2025-05-03': '劳动节',
+            '2025-05-04': '劳动节',
+            '2025-05-05': '劳动节',
+            '2025-05-31': '端午',
+            '2025-06-01': '端午',
+            '2025-06-02': '端午',
+            '2025-10-01': '国庆',
+            '2025-10-02': '国庆',
+            '2025-10-03': '国庆',
+            '2025-10-04': '国庆',
+            '2025-10-05': '国庆',
+            '2025-10-06': '国庆',
+            '2025-10-07': '国庆',
+            '2025-10-08': '国庆'
+        };
+        
+        const holidays2026 = {
+            '2026-01-01': '元旦',
+            '2026-02-17': '春节',
+            '2026-02-18': '春节',
+            '2026-02-19': '春节',
+            '2026-02-20': '春节',
+            '2026-02-21': '春节',
+            '2026-02-22': '春节',
+            '2026-02-23': '春节',
+            '2026-02-24': '春节',
+            '2026-04-04': '清明',
+            '2026-04-05': '清明',
+            '2026-04-06': '清明',
+            '2026-05-01': '劳动节',
+            '2026-05-02': '劳动节',
+            '2026-05-03': '劳动节',
+            '2026-05-04': '劳动节',
+            '2026-05-05': '劳动节',
+            '2026-06-19': '端午',
+            '2026-06-20': '端午',
+            '2026-06-21': '端午',
+            '2026-10-01': '国庆',
+            '2026-10-02': '国庆',
+            '2026-10-03': '国庆',
+            '2026-10-04': '国庆',
+            '2026-10-05': '国庆',
+            '2026-10-06': '国庆',
+            '2026-10-07': '国庆',
+            '2026-10-08': '国庆'
+        };
+        
+        // 合并节假日数据
+        const holidays = { ...holidays2025, ...holidays2026 };
+        
+        // 当前周偏移量
+        let currentWeekOffset = 0;
+        
+        // 撤销/恢复历史记录
+        let historyStack = [];
+        let historyIndex = -1;
+        const MAX_HISTORY = 20; // 最大历史记录数
+        
+        // 格式化日期为 YYYY-MM-DD
+        function formatDateKey(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // 格式化日期显示
+        function formatDateDisplay(date) {
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            return `${month}月${day}日`;
+        }
+        
+        // 获取星期几名称
+        function getDayName(dayIndex) {
+            const names = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            return names[dayIndex];
+        }
+        
+        // 获取当前日期所在周的周五、六、日
+        function getWeekendDates(weekOffset = 0) {
+            const now = new Date();
+            const currentDay = now.getDay(); // 0=周日, 1=周一, ..., 6=周六
+            
+            // 计算本周日的日期
+            const sunday = new Date(now);
+            sunday.setDate(now.getDate() - currentDay + (weekOffset * 7));
+            
+            // 计算本周五、六
+            const friday = new Date(sunday);
+            friday.setDate(sunday.getDate() - 2);
+            
+            const saturday = new Date(sunday);
+            saturday.setDate(sunday.getDate() - 1);
+            
+            return { friday, saturday, sunday };
+        }
+        
+        // 检测日期是否在节假日期间，返回该节假日的所有日期
+        function getHolidayPeriod(date) {
+            const dateKey = formatDateKey(date);
+            const holidayName = holidays[dateKey];
+            
+            if (!holidayName) return null;
+            
+            // 找到该节假期的所有日期
+            const periodDates = [];
+            for (let i = -10; i <= 10; i++) {
+                const checkDate = new Date(date);
+                checkDate.setDate(date.getDate() + i);
+                const checkKey = formatDateKey(checkDate);
+                if (holidays[checkKey] === holidayName) {
+                    periodDates.push({ date: new Date(checkDate), dateKey: checkKey });
+                }
+            }
+            
+            // 找到假期第一天，然后计算前一天
+            if (periodDates.length > 0) {
+                // 按日期排序
+                periodDates.sort((a, b) => a.date - b.date);
+                const firstHolidayDate = periodDates[0].date;
+                
+                // 计算假期前一天
+                const dayBefore = new Date(firstHolidayDate);
+                dayBefore.setDate(firstHolidayDate.getDate() - 1);
+                const dayBeforeKey = formatDateKey(dayBefore);
+                
+                return { 
+                    name: holidayName, 
+                    dates: periodDates,
+                    dayBefore: { date: dayBefore, dateKey: dayBeforeKey }
+                };
+            }
+            
+            return { name: holidayName, dates: periodDates };
+        }
+        
+        // 时间段配置 - 智能检测节假日
+        function getScheduleConfig(weekOffset = 0) {
+            const dates = getWeekendDates(weekOffset);
+            const days = [dates.friday, dates.saturday, dates.sunday];
+            
+            // 检查是否处于节假日期间
+            let holidayPeriod = null;
+            for (const day of days) {
+                const period = getHolidayPeriod(day);
+                if (period) {
+                    holidayPeriod = period;
+                    break;
+                }
+            }
+            
+            // 如果在节假日期间，显示完整的假期（包括前一天晚上）
+            if (holidayPeriod) {
+                const config = {};
+                let index = 0;
+                
+                // 先添加假期前一天晚上（19:00-21:00）
+                if (holidayPeriod.dayBefore) {
+                    const dayBeforeIndex = holidayPeriod.dayBefore.date.getDay();
+                    config[`day${index}`] = {
+                        name: getDayName(dayBeforeIndex),
+                        date: holidayPeriod.dayBefore.date,
+                        dateKey: holidayPeriod.dayBefore.dateKey,
+                        holidayName: holidayPeriod.name + '前',
+                        startHour: 19, // 前一天晚上只安排2小时
+                        endHour: 21,
+                        slots: []
+                    };
+                    index++;
+                }
+                
+                // 再添加假期期间的每一天（全天 7:00-21:00）
+                holidayPeriod.dates.forEach((item) => {
+                    const dayIndex = item.date.getDay();
+                    
+                    config[`day${index}`] = {
+                        name: getDayName(dayIndex),
+                        date: item.date,
+                        dateKey: item.dateKey,
+                        holidayName: holidayPeriod.name,
+                        startHour: 7, // 假期期间全天安排
+                        endHour: 21,
+                        slots: []
+                    };
+                    index++;
+                });
+                
+                return { days: config, isHoliday: true, holidayName: holidayPeriod.name };
+            }
+            
+            // 普通周末
+            return {
+                days: {
+                    friday: {
+                        name: '星期五',
+                        date: dates.friday,
+                        dateKey: formatDateKey(dates.friday),
+                        startHour: 19,
+                        endHour: 21,
+                        slots: []
+                    },
+                    saturday: {
+                        name: '星期六',
+                        date: dates.saturday,
+                        dateKey: formatDateKey(dates.saturday),
+                        startHour: 7,
+                        endHour: 21,
+                        slots: []
+                    },
+                    sunday: {
+                        name: '星期天',
+                        date: dates.sunday,
+                        dateKey: formatDateKey(dates.sunday),
+                        startHour: 7,
+                        endHour: 21,
+                        slots: []
+                    }
+                },
+                isHoliday: false,
+                holidayName: null
+            };
+        }
+        
+        let scheduleConfig = getScheduleConfig(0);
+        
+        // 类型映射
+        const typeMap = {
+            play: { name: '玩', class: 'play', fillSlot: true },
+            study: { name: '学习', class: 'study', fillSlot: true },
+            entertainment: { name: '娱乐', class: 'entertainment', fillSlot: true },
+            switch: { name: 'Switch', class: 'switch', fillSlot: true },
+            emotion: { name: '情绪', class: 'emotion', fillSlot: true },
+            sleep: { name: '睡觉', class: 'sleep', fillSlot: true }
+        };
+        
+        // 自定义方块颜色配置
+        const colorConfig = {
+            red: { bg: 'linear-gradient(135deg, #ff6b6b, #ee5a5a)', border: '#ff6b6b', text: '#e03131', fillBg: 'linear-gradient(135deg, #ffe3e3, #ffc9c9)' },
+            green: { bg: 'linear-gradient(135deg, #51cf66, #40c057)', border: '#51cf66', text: '#2f9e44', fillBg: 'linear-gradient(135deg, #d3f9d8, #b2f2bb)' },
+            blue: { bg: 'linear-gradient(135deg, #339af0, #228be6)', border: '#339af0', text: '#1971c2', fillBg: 'linear-gradient(135deg, #d0ebff, #a5d8ff)' },
+            yellow: { bg: 'linear-gradient(135deg, #ffd43b, #fcc419)', border: '#ffd43b', text: '#f08c00', fillBg: 'linear-gradient(135deg, #fff9db, #fff3bf)' },
+            purple: { bg: 'linear-gradient(135deg, #9775fa, #7950f2)', border: '#9775fa', text: '#7048e8', fillBg: 'linear-gradient(135deg, #e5dbff, #d0bfff)' },
+            pink: { bg: 'linear-gradient(135deg, #ff8787, #ff6b6b)', border: '#ff8787', text: '#e64980', fillBg: 'linear-gradient(135deg, #ffe0e0, #ffc9c9)' },
+            orange: { bg: 'linear-gradient(135deg, #ffa94d, #ff922b)', border: '#ffa94d', text: '#d9480f', fillBg: 'linear-gradient(135deg, #ffe8cc, #ffd8a8)' },
+            teal: { bg: 'linear-gradient(135deg, #20c997, #12b886)', border: '#20c997', text: '#0ca678', fillBg: 'linear-gradient(135deg, #c3fae8, #96f2d7)' },
+            gray: { bg: 'linear-gradient(135deg, #868e96, #495057)', border: '#868e96', text: '#495057', fillBg: 'linear-gradient(135deg, #e9ecef, #dee2e6)' },
+            magenta: { bg: 'linear-gradient(135deg, #be4bdb, #ae3ec9)', border: '#be4bdb', text: '#9c36b5', fillBg: 'linear-gradient(135deg, #f3d9fa, #eebefa)' }
+        };
+        
+        // 自定义方块数据
+        let customBlocks = [];
+        
+        // 加载自定义方块（用户隔离）
+        function loadCustomBlocks() {
+            const saved = localStorage.getItem(`${getUserStoragePrefix()}customBlocks`);
+            if (saved) {
+                customBlocks = JSON.parse(saved);
+                renderCustomBlocks();
+            } else {
+                customBlocks = [];
+                renderCustomBlocks();
+            }
+        }
+        
+        // 渲染自定义方块
+        function renderCustomBlocks() {
+            const container = document.getElementById('customBlocks');
+            container.innerHTML = '';
+            
+            customBlocks.forEach((block, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'custom-block-wrapper';
+                
+                const blockEl = document.createElement('div');
+                blockEl.className = 'custom-block';
+                blockEl.draggable = true;
+                blockEl.dataset.type = `custom_${index}`;
+                blockEl.textContent = block.text;
+                blockEl.style.background = colorConfig[block.color].bg;
+                blockEl.style.color = ['yellow', 'pink', 'orange'].includes(block.color) ? '#333' : 'white';
+                
+                // 添加到 typeMap
+                typeMap[`custom_${index}`] = {
+                    name: block.text,
+                    class: `custom-${index}`,
+                    fillSlot: true,
+                    isCustom: true,
+                    color: block.color
+                };
+                
+                // 添加拖拽事件
+                blockEl.addEventListener('dragstart', (e) => {
+                    draggedType = blockEl.dataset.type;
+                    blockEl.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+                
+                blockEl.addEventListener('dragend', () => {
+                    blockEl.classList.remove('dragging');
+                    draggedType = null;
+                });
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-custom-btn';
+                deleteBtn.innerHTML = '×';
+                deleteBtn.onclick = () => deleteCustomBlock(index);
+                
+                wrapper.appendChild(blockEl);
+                wrapper.appendChild(deleteBtn);
+                container.appendChild(wrapper);
+            });
+            
+            // 更新动态样式
+            updateCustomBlockStyles();
+        }
+        
+        // 更新自定义方块的 CSS 样式
+        function updateCustomBlockStyles() {
+            let styleEl = document.getElementById('customBlockStyles');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'customBlockStyles';
+                document.head.appendChild(styleEl);
+            }
+            
+            let css = '';
+            customBlocks.forEach((block, index) => {
+                const config = colorConfig[block.color];
+                css += `
+                    .slot-content.custom-${index} { color: ${config.text}; }
+                    .time-slot.filled-custom-${index} {
+                        background: ${config.fillBg} !important;
+                        border: 2px solid ${config.border} !important;
+                        border-style: solid !important;
+                    }
+                    .time-slot.filled-custom-${index} .time-label { color: ${config.text}; }
+                `;
+            });
+            styleEl.textContent = css;
+        }
+        
+        // 显示弹窗
+        function showCustomBlockModal() {
+            document.getElementById('customBlockModal').classList.add('active');
+            document.getElementById('customBlockText').value = '';
+            document.getElementById('customBlockText').focus();
+        }
+        
+        // 隐藏弹窗
+        function hideCustomBlockModal() {
+            document.getElementById('customBlockModal').classList.remove('active');
+        }
+        
+        // 颜色选择
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+        
+        // 添加自定义方块
+        function addCustomBlock() {
+            const text = document.getElementById('customBlockText').value.trim();
+            if (!text) {
+                alert('请输入方块名称');
+                return;
+            }
+            
+            const selectedColor = document.querySelector('.color-option.selected');
+            const color = selectedColor ? selectedColor.dataset.color : 'red';
+            
+            customBlocks.push({ text, color });
+            localStorage.setItem(`${getUserStoragePrefix()}customBlocks`, JSON.stringify(customBlocks));
+            
+            renderCustomBlocks();
+            hideCustomBlockModal();
+        }
+        
+        // 删除自定义方块
+        function deleteCustomBlock(index) {
+            if (confirm('确定要删除这个自定义方块吗？')) {
+                customBlocks.splice(index, 1);
+                localStorage.setItem(`${getUserStoragePrefix()}customBlocks`, JSON.stringify(customBlocks));
+                
+                // 清理 typeMap
+                Object.keys(typeMap).forEach(key => {
+                    if (key.startsWith('custom_')) {
+                        delete typeMap[key];
+                    }
+                });
+                
+                renderCustomBlocks();
+            }
+        }
+        
+        // 点击弹窗外部关闭
+        document.getElementById('customBlockModal').addEventListener('click', (e) => {
+            if (e.target.id === 'customBlockModal') {
+                hideCustomBlockModal();
+            }
+        });
+        
+        // 回车键添加
+        document.getElementById('customBlockText').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addCustomBlock();
+            }
+        });
+        
+        // 初始化迷你日历
+        function initCalendar() {
+            const calendarContainer = document.getElementById('miniCalendar');
+            calendarContainer.innerHTML = '';
+            
+            const config = getScheduleConfig(currentWeekOffset);
+            const today = new Date();
+            const todayKey = formatDateKey(today);
+            
+            // 获取要显示的日期列表
+            const daysToShow = config.isHoliday 
+                ? Object.values(config.days)
+                : [
+                    { name: '周五', date: getWeekendDates(currentWeekOffset).friday },
+                    { name: '周六', date: getWeekendDates(currentWeekOffset).saturday },
+                    { name: '周日', date: getWeekendDates(currentWeekOffset).sunday }
+                ];
+            
+            daysToShow.forEach(day => {
+                const dayKey = formatDateKey(day.date);
+                const isToday = dayKey === todayKey;
+                const holidayName = holidays[dayKey];
+                
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                if (isToday) dayEl.classList.add('active');
+                if (holidayName) dayEl.classList.add('holiday');
+                
+                dayEl.innerHTML = `
+                    <span class="day-name">${day.name}</span>
+                    <span class="day-date">${formatDateDisplay(day.date)}</span>
+                    ${holidayName ? `<span class="holiday-badge">${holidayName}</span>` : ''}
+                `;
+                
+                calendarContainer.appendChild(dayEl);
+            });
+            
+            // 更新周显示
+            const weekDisplay = document.getElementById('currentWeek');
+            if (currentWeekOffset === 0) {
+                weekDisplay.textContent = '本周';
+            } else if (currentWeekOffset === 1) {
+                weekDisplay.textContent = '下周';
+            } else if (currentWeekOffset === -1) {
+                weekDisplay.textContent = '上周';
+            } else {
+                weekDisplay.textContent = `${currentWeekOffset > 0 ? '+' : ''}${currentWeekOffset}周`;
+            }
+        }
+        
+        // 切换周
+        function changeWeek(direction) {
+            currentWeekOffset += direction;
+            scheduleConfig = getScheduleConfig(currentWeekOffset);
+            initCalendar();
+            initSchedule();
+            loadSchedule();
+        }
+        
+        // 初始化时间表
+        function initSchedule() {
+            const container = document.getElementById('daysContainer');
+            container.innerHTML = '';
+            
+            // 重新获取配置
+            const config = getScheduleConfig(currentWeekOffset);
+            scheduleConfig = config.days;
+            
+            // 如果是节假日，更新标题
+            const panelTitle = document.querySelector('.schedule-panel h2');
+            if (config.isHoliday) {
+                panelTitle.innerHTML = `📅 ${config.holidayName}假期安排`;
+            } else {
+                panelTitle.innerHTML = '📅 时间安排';
+            }
+            
+            Object.keys(scheduleConfig).forEach(dayKey => {
+                const day = scheduleConfig[dayKey];
+                const dayColumn = document.createElement('div');
+                dayColumn.className = 'day-column';
+                
+                const header = document.createElement('div');
+                header.className = 'day-header';
+                const holidayName = holidays[day.dateKey];
+                header.innerHTML = `${day.name}<br><small>${formatDateDisplay(day.date)}${holidayName ? ' · ' + holidayName : ''}</small>`;
+                dayColumn.appendChild(header);
+                
+                const timeSlots = document.createElement('div');
+                timeSlots.className = 'time-slots';
+                
+                for (let hour = day.startHour; hour < day.endHour; hour++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'time-slot';
+                    slot.dataset.day = dayKey;
+                    slot.dataset.hour = hour;
+                    slot.dataset.dateKey = day.dateKey;
+                    
+                    const timeLabel = document.createElement('span');
+                    timeLabel.className = 'time-label';
+                    timeLabel.textContent = `${String(hour).padStart(2, '0')}:00-${String(hour + 1).padStart(2, '0')}:00`;
+                    
+                    const content = document.createElement('span');
+                    content.className = 'slot-content';
+                    content.textContent = '';
+                    
+                    const clearBtn = document.createElement('button');
+                    clearBtn.className = 'clear-btn';
+                    clearBtn.innerHTML = '×';
+                    clearBtn.onclick = () => clearSlot(slot);
+                    
+                    slot.appendChild(timeLabel);
+                    slot.appendChild(content);
+                    slot.appendChild(clearBtn);
+                    
+                    // 添加拖放事件
+                    slot.addEventListener('dragover', handleDragOver);
+                    slot.addEventListener('dragleave', handleDragLeave);
+                    slot.addEventListener('drop', handleDrop);
+                    
+                    timeSlots.appendChild(slot);
+                }
+                
+                dayColumn.appendChild(timeSlots);
+                container.appendChild(dayColumn);
+            });
+        }
+        
+        // 拖拽功能
+        let draggedType = null;
+        
+        document.querySelectorAll('.block').forEach(block => {
+            block.addEventListener('dragstart', (e) => {
+                draggedType = block.dataset.type;
+                block.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'copy';
+            });
+            
+            block.addEventListener('dragend', () => {
+                block.classList.remove('dragging');
+                draggedType = null;
+            });
+        });
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+        
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            const slot = e.currentTarget;
+            slot.classList.remove('drag-over');
+            
+            if (draggedType && typeMap[draggedType]) {
+                const content = slot.querySelector('.slot-content');
+                const typeInfo = typeMap[draggedType];
+                content.textContent = typeInfo.name;
+                content.className = `slot-content ${typeInfo.class}`;
+                
+                // 清除之前的填充样式（包括自定义方块）
+                const allFillClasses = Array.from(slot.classList).filter(c => c.startsWith('filled-'));
+                allFillClasses.forEach(cls => slot.classList.remove(cls));
+                
+                // 添加对应的填充样式
+                if (typeInfo.fillSlot) {
+                    slot.classList.add(`filled-${typeInfo.class}`);
+                }
+                
+                // 保存到本地存储
+                saveSchedule();
+            }
+        }
+        
+        // 清除时间段
+        function clearSlot(slot) {
+            const content = slot.querySelector('.slot-content');
+            content.textContent = '';
+            content.className = 'slot-content';
+            // 清除所有填充样式（包括自定义方块）
+            const allFillClasses = Array.from(slot.classList).filter(c => c.startsWith('filled-'));
+            allFillClasses.forEach(cls => slot.classList.remove(cls));
+            saveSchedule();
+        }
+        
+        // 获取当前周的存储键（用户隔离）
+        function getWeekStorageKey() {
+            const dates = getWeekendDates(currentWeekOffset);
+            const weekStart = formatDateKey(dates.friday);
+            return `${getUserStoragePrefix()}schedule_${weekStart}`;
+        }
+        
+        // 获取当前状态数据
+        function getCurrentState() {
+            const data = {};
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                const day = slot.dataset.day;
+                const hour = slot.dataset.hour;
+                const content = slot.querySelector('.slot-content').textContent;
+                
+                // 获取当前填充的类型（包括自定义方块）
+                let filledType = '';
+                const fillClass = Array.from(slot.classList).find(c => c.startsWith('filled-'));
+                if (fillClass) {
+                    filledType = fillClass.replace('filled-', '');
+                }
+                
+                if (!data[day]) data[day] = {};
+                if (content) {
+                    data[day][hour] = {
+                        name: content,
+                        filledType: filledType
+                    };
+                }
+            });
+            return data;
+        }
+        
+        // 保存到本地存储（每周独立）
+        function saveSchedule() {
+            const data = getCurrentState();
+            const storageKey = getWeekStorageKey();
+            localStorage.setItem(storageKey, JSON.stringify(data));
+            
+            // 添加到历史记录
+            addToHistory(data);
+            
+            // 更新统计
+            updateStats();
+        }
+        
+        // 添加到历史记录
+        function addToHistory(data) {
+            // 如果当前不在历史记录末尾，删除后面的记录
+            if (historyIndex < historyStack.length - 1) {
+                historyStack = historyStack.slice(0, historyIndex + 1);
+            }
+            
+            // 添加新状态
+            historyStack.push(JSON.parse(JSON.stringify(data)));
+            
+            // 限制历史记录数量
+            if (historyStack.length > MAX_HISTORY) {
+                historyStack.shift();
+            } else {
+                historyIndex++;
+            }
+            
+            updateUndoRedoButtons();
+        }
+        
+        // 更新撤销/恢复按钮状态
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+            
+            if (undoBtn) undoBtn.disabled = historyIndex <= 0;
+            if (redoBtn) redoBtn.disabled = historyIndex >= historyStack.length - 1;
+        }
+        
+        // 更新统计
+        function updateStats() {
+            const statsGrid = document.getElementById('statsGrid');
+            if (!statsGrid) return;
+            
+            // 统计当前周各类型的时间块数量
+            const stats = {};
+            let total = 0;
+            
+            // 初始化所有类型
+            Object.keys(typeMap).forEach(key => {
+                stats[key] = { name: typeMap[key].name, count: 0, color: '' };
+            });
+            
+            // 统计当前显示的时间格
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                const content = slot.querySelector('.slot-content').textContent;
+                if (content) {
+                    // 找到对应的类型
+                    const typeKey = Object.keys(typeMap).find(key => typeMap[key].name === content);
+                    if (typeKey) {
+                        stats[typeKey].count++;
+                        total++;
+                    }
+                }
+            });
+            
+            // 生成统计HTML
+            let html = '';
+            const sortedStats = Object.entries(stats)
+                .filter(([key, stat]) => stat.count > 0)
+                .sort((a, b) => b[1].count - a[1].count);
+            
+            sortedStats.forEach(([key, stat]) => {
+                const percentage = total > 0 ? (stat.count / total * 100).toFixed(1) : 0;
+                let color, fillColor;
+                
+                if (typeMap[key].isCustom) {
+                    const colorKey = typeMap[key].color;
+                    color = colorConfig[colorKey].border;
+                    fillColor = colorConfig[colorKey].bg;
+                } else {
+                    switch(key) {
+                        case 'play':
+                        case 'switch':
+                            color = '#ff6b6b';
+                            fillColor = 'linear-gradient(135deg, #ff6b6b, #ee5a5a)';
+                            break;
+                        case 'study':
+                            color = '#51cf66';
+                            fillColor = 'linear-gradient(135deg, #51cf66, #40c057)';
+                            break;
+                        case 'entertainment':
+                            color = '#339af0';
+                            fillColor = 'linear-gradient(135deg, #339af0, #228be6)';
+                            break;
+                        case 'emotion':
+                            color = '#ffd43b';
+                            fillColor = 'linear-gradient(135deg, #ffd43b, #fcc419)';
+                            break;
+                        case 'sleep':
+                            color = '#9775fa';
+                            fillColor = 'linear-gradient(135deg, #9775fa, #7950f2)';
+                            break;
+                        default:
+                            color = '#868e96';
+                            fillColor = 'linear-gradient(135deg, #868e96, #495057)';
+                    }
+                }
+                
+                html += `
+                    <div class="stat-item">
+                        <div class="stat-color" style="background: ${color}"></div>
+                        <span class="stat-name">${stat.name}</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: ${percentage}%; background: ${fillColor}"></div>
+                        </div>
+                        <span class="stat-count">${stat.count}h</span>
+                    </div>
+                `;
+            });
+            
+            if (total > 0) {
+                html += `<div class="stat-total">本周已安排 ${total} 小时</div>`;
+            } else {
+                html += `<div class="stat-total">本周还没有安排哦~</div>`;
+            }
+            
+            statsGrid.innerHTML = html;
+        }
+        
+        // 撤销
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                const state = historyStack[historyIndex];
+                applyState(state);
+                
+                // 保存到 localStorage
+                const storageKey = getWeekStorageKey();
+                localStorage.setItem(storageKey, JSON.stringify(state));
+                
+                updateUndoRedoButtons();
+                updateStats();
+            }
+        }
+        
+        // 恢复
+        function redo() {
+            if (historyIndex < historyStack.length - 1) {
+                historyIndex++;
+                const state = historyStack[historyIndex];
+                applyState(state);
+                
+                // 保存到 localStorage
+                const storageKey = getWeekStorageKey();
+                localStorage.setItem(storageKey, JSON.stringify(state));
+                
+                updateUndoRedoButtons();
+                updateStats();
+            }
+        }
+        
+        // 应用状态到界面
+        function applyState(data) {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                const day = slot.dataset.day;
+                const hour = slot.dataset.hour;
+                const content = slot.querySelector('.slot-content');
+                
+                // 清空当前状态
+                content.textContent = '';
+                content.className = 'slot-content';
+                // 清除所有填充样式（包括自定义方块）
+                const allFillClasses = Array.from(slot.classList).filter(c => c.startsWith('filled-'));
+                allFillClasses.forEach(cls => slot.classList.remove(cls));
+                
+                // 应用新状态
+                if (data[day] && data[day][hour]) {
+                    const slotData = data[day][hour];
+                    const activityName = typeof slotData === 'string' ? slotData : slotData.name;
+                    const filledType = typeof slotData === 'object' ? slotData.filledType : '';
+                    
+                    content.textContent = activityName;
+                    
+                    // 设置对应的颜色类
+                    const typeKey = Object.keys(typeMap).find(key => typeMap[key].name === activityName);
+                    if (typeKey) {
+                        content.className = `slot-content ${typeMap[typeKey].class}`;
+                    }
+                    
+                    // 恢复填充状态
+                    if (filledType) {
+                        slot.classList.add(`filled-${filledType}`);
+                    }
+                }
+            });
+        }
+        
+        // 从本地存储加载（每周独立）
+        function loadSchedule() {
+            const storageKey = getWeekStorageKey();
+            const saved = localStorage.getItem(storageKey);
+            
+            // 清空当前显示
+            document.querySelectorAll('.slot-content').forEach(content => {
+                content.textContent = '';
+                content.className = 'slot-content';
+            });
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                // 清除所有填充样式（包括自定义方块）
+                const allFillClasses = Array.from(slot.classList).filter(c => c.startsWith('filled-'));
+                allFillClasses.forEach(cls => slot.classList.remove(cls));
+            });
+            
+            if (saved) {
+                const data = JSON.parse(saved);
+                
+                // 初始化历史记录
+                historyStack = [JSON.parse(JSON.stringify(data))];
+                historyIndex = 0;
+                
+                document.querySelectorAll('.time-slot').forEach(slot => {
+                    const day = slot.dataset.day;
+                    const hour = slot.dataset.hour;
+                    const content = slot.querySelector('.slot-content');
+                    
+                    if (data[day] && data[day][hour]) {
+                        const slotData = data[day][hour];
+                        // 兼容旧数据格式
+                        const activityName = typeof slotData === 'string' ? slotData : slotData.name;
+                        const filledType = typeof slotData === 'object' ? slotData.filledType : '';
+                        // 兼容旧版本的 emotionFilled
+                        const isEmotionFilled = typeof slotData === 'object' ? slotData.emotionFilled : false;
+                        
+                        content.textContent = activityName;
+                        
+                        // 设置对应的颜色类
+                        const typeKey = Object.keys(typeMap).find(key => typeMap[key].name === activityName);
+                        if (typeKey) {
+                            content.className = `slot-content ${typeMap[typeKey].class}`;
+                        }
+                        
+                        // 恢复填充状态
+                        if (filledType) {
+                            slot.classList.add(`filled-${filledType}`);
+                        } else if (isEmotionFilled) {
+                            // 兼容旧版本
+                            slot.classList.add('filled-emotion');
+                        }
+                    }
+                });
+            } else {
+                // 没有保存的数据，重置历史记录
+                historyStack = [{}];
+                historyIndex = 0;
+            }
+            
+            updateUndoRedoButtons();
+            updateStats();
+        }
+        
+        // 重置时间表
+        function resetSchedule() {
+            if (confirm('确定要清空本周所有时间安排吗？')) {
+                document.querySelectorAll('.slot-content').forEach(content => {
+                    content.textContent = '';
+                    content.className = 'slot-content';
+                });
+                document.querySelectorAll('.time-slot').forEach(slot => {
+                    // 清除所有填充样式（包括自定义方块）
+                    const allFillClasses = Array.from(slot.classList).filter(c => c.startsWith('filled-'));
+                    allFillClasses.forEach(cls => slot.classList.remove(cls));
+                });
+                
+                // 只删除当前周的存储
+                const storageKey = getWeekStorageKey();
+                localStorage.removeItem(storageKey);
+                
+                // 重置历史记录
+                historyStack = [{}];
+                historyIndex = 0;
+                updateUndoRedoButtons();
+                updateStats();
+            }
+        }
+        
+        // 分享相关变量
+        let screenshotDataUrl = null;
+        
+        // 显示分享弹窗
+        function showShareModal() {
+            document.getElementById('shareModal').classList.add('active');
+            generateScreenshot();
+        }
+        
+        // 隐藏分享弹窗
+        function hideShareModal() {
+            document.getElementById('shareModal').classList.remove('active');
+            screenshotDataUrl = null;
+        }
+        
+        // 生成截图
+        async function generateScreenshot() {
+            const preview = document.getElementById('sharePreview');
+            preview.innerHTML = '<p>正在生成截图...</p>';
+            
+            try {
+                // 创建截图容器
+                const container = document.createElement('div');
+                container.className = 'screenshot-container';
+                container.style.width = '800px';
+                container.style.position = 'absolute';
+                container.style.left = '-9999px';
+                container.style.top = '0';
+                document.body.appendChild(container);
+                
+                // 构建截图内容
+                const weekText = document.getElementById('currentWeek').textContent;
+                const statsHtml = document.getElementById('statsGrid').innerHTML;
+                
+                let scheduleHtml = '';
+                document.querySelectorAll('.day-column').forEach(dayCol => {
+                    const header = dayCol.querySelector('.day-header').innerHTML;
+                    const slots = [];
+                    dayCol.querySelectorAll('.time-slot').forEach(slot => {
+                        const time = slot.querySelector('.time-label').textContent;
+                        const content = slot.querySelector('.slot-content').textContent;
+                        const filledClass = Array.from(slot.classList).find(c => c.startsWith('filled-'));
+                        let bgStyle = '';
+                        if (filledClass) {
+                            const type = filledClass.replace('filled-', '');
+                            if (type === 'play' || type === 'switch') bgStyle = 'background: linear-gradient(135deg, #ffe3e3, #ffc9c9); color: #e03131;';
+                            else if (type === 'study') bgStyle = 'background: linear-gradient(135deg, #d3f9d8, #b2f2bb); color: #2f9e44;';
+                            else if (type === 'entertainment') bgStyle = 'background: linear-gradient(135deg, #d0ebff, #a5d8ff); color: #1971c2;';
+                            else if (type === 'emotion') bgStyle = 'background: linear-gradient(135deg, #fff9db, #fff3bf); color: #f08c00;';
+                            else if (type === 'sleep') bgStyle = 'background: linear-gradient(135deg, #e5dbff, #d0bfff); color: #7048e8;';
+                            else if (type.startsWith('custom-')) {
+                                const customIndex = parseInt(type.replace('custom-', ''));
+                                if (customBlocks[customIndex]) {
+                                    const colorKey = customBlocks[customIndex].color;
+                                    bgStyle = `background: ${colorConfig[colorKey].fillBg}; color: ${colorConfig[colorKey].text};`;
+                                }
+                            }
+                        }
+                        if (content) {
+                            slots.push({ time, content, bgStyle });
+                        }
+                    });
+                    
+                    if (slots.length > 0) {
+                        scheduleHtml += `
+                            <div class="screenshot-day">
+                                <div class="screenshot-day-header">${header}</div>
+                                <div class="screenshot-slots">
+                                    ${slots.map(s => `
+                                        <div class="screenshot-slot" style="${s.bgStyle}">
+                                            <span class="screenshot-slot-time">${s.time}</span>
+                                            <span class="screenshot-slot-content">${s.content}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                if (!scheduleHtml) {
+                    scheduleHtml = '<p style="text-align: center; color: #868e96; padding: 40px;">本周还没有安排哦~</p>';
+                }
+                
+                const date = new Date();
+                const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+                
+                const userName = getUserName();
+                container.innerHTML = `
+                    <h1>🕐 ${userName}时间管理系统 - ${weekText}</h1>
+                    <div class="screenshot-content">
+                        <div class="screenshot-schedule">
+                            ${scheduleHtml}
+                        </div>
+                        <div class="screenshot-stats">
+                            <h3>📊 本周统计</h3>
+                            ${statsHtml}
+                        </div>
+                    </div>
+                    <div class="screenshot-footer">
+                        生成于 ${dateStr} | ${userName}时间管理系统
+                    </div>
+                `;
+                
+                // 使用 html2canvas 截图
+                const canvas = await html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null
+                });
+                
+                screenshotDataUrl = canvas.toDataURL('image/png');
+                preview.innerHTML = `<img src="${screenshotDataUrl}" alt="截图预览">`;
+                
+                // 清理
+                document.body.removeChild(container);
+                
+            } catch (error) {
+                console.error('截图失败:', error);
+                preview.innerHTML = '<p style="color: #ff6b6b;">截图生成失败，请重试</p>';
+            }
+        }
+        
+        // 下载截图
+        function downloadScreenshot() {
+            if (!screenshotDataUrl) return;
+            
+            const link = document.createElement('a');
+            const weekText = document.getElementById('currentWeek').textContent;
+            const userName = getUserName();
+            const date = new Date();
+            const dateStr = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
+            link.download = `${userName}时间安排_${weekText}_${dateStr}.png`;
+            link.href = screenshotDataUrl;
+            link.click();
+        }
+        
+        // 复制截图到剪贴板
+        async function copyScreenshot() {
+            if (!screenshotDataUrl) return;
+            
+            try {
+                const response = await fetch(screenshotDataUrl);
+                const blob = await response.blob();
+                
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        'image/png': blob
+                    })
+                ]);
+                
+                const copyBtn = document.getElementById('copyBtn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ 已复制!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+                
+            } catch (error) {
+                console.error('复制失败:', error);
+                alert('复制到剪贴板失败，请尝试下载图片');
+            }
+        }
+        
+        // 点击弹窗外部关闭
+        document.getElementById('shareModal').addEventListener('click', (e) => {
+            if (e.target.id === 'shareModal') {
+                hideShareModal();
+            }
+        });
+        
+        // 切换用户时重新加载数据
+        function switchUser() {
+            // 清理当前显示
+            document.querySelectorAll('.slot-content').forEach(content => {
+                content.textContent = '';
+                content.className = 'slot-content';
+            });
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                // 清除所有填充样式（包括自定义方块）
+                const allFillClasses = Array.from(slot.classList).filter(c => c.startsWith('filled-'));
+                allFillClasses.forEach(cls => slot.classList.remove(cls));
+            });
+            
+            // 清理 typeMap 中的自定义方块
+            Object.keys(typeMap).forEach(key => {
+                if (key.startsWith('custom_')) {
+                    delete typeMap[key];
+                }
+            });
+            
+            // 重置历史记录
+            historyStack = [{}];
+            historyIndex = 0;
+            
+            // 重新加载数据
+            loadSchedule();
+            loadCustomBlocks();
+            updateStats();
+            updateUndoRedoButtons();
+            
+            // 更新标题
+            const userName = getUserName();
+            document.title = `${userName}时间管理系统`;
+        }
+        
+        // 监听名字修改
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameEl = document.getElementById('systemName');
+            if (nameEl) {
+                let originalName = nameEl.textContent.trim();
+                
+                nameEl.addEventListener('blur', () => {
+                    const newName = nameEl.textContent.trim();
+                    if (newName && newName !== originalName) {
+                        originalName = newName;
+                        switchUser();
+                    } else if (!newName) {
+                        nameEl.textContent = originalName || '兮兮';
+                    }
+                });
+                
+                nameEl.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        nameEl.blur();
+                    }
+                });
+            }
+        });
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            const config = getScheduleConfig(0);
+            scheduleConfig = config.days;
+            initCalendar();
+            initSchedule();
+            loadSchedule();
+            loadCustomBlocks();
+        });
+    </script>
 </body>
 </html>
